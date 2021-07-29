@@ -1,0 +1,149 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "basics": [
+            {
+                "name": "adminCredsMessage",
+                "type": "Microsoft.Common.InfoBox",
+                "visible": true,
+                "options": {
+                    "icon": "Info",
+                    "text": "These Admin credentials are for administrative purposes, in case you need to login as root. They won't be used during the course."
+                }
+            },
+	    {
+                "name": "adminUserWarning",
+                "type": "Microsoft.Common.InfoBox",
+                "visible": true,
+                "options": {
+                    "icon": "Warning",
+                    "text": "DO NOT use 'student' as an admin username as that is reserved for labs."
+                }
+            },
+            {
+                "name": "adminUsername",
+                "type": "Microsoft.Compute.UserNameTextBox",
+                "label": "Admin Username",
+                "toolTip": "Admin username for the machine. For administrative purposes; won't be used during the course.",
+                "osPlatform": "Linux",
+                "constraints": {
+                    "required": true
+                }
+            },
+            {
+                "name": "adminPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                    "password": "Admin Password",
+                    "confirmPassword": "Confirm Password"
+                },
+                "toolTip": "Administrator password for root access to the VM. For administrative purposes; won't be used during the course.",
+                "constraints": {
+                    "required": true,
+                    "customPasswordRegex": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[\\w~@#$%^&*+=|{}:;!.?\\()\\[\\]-]{8,}$",
+                    "customValidationMessage": "The password must contain at least 8 characters, with at least 1 uppercase, 1 lowercase and 1 number."
+                },
+                "options": {
+                    "hideConfirmation": false
+                },
+                "visible": true
+            }
+        ],
+        "steps": [
+            {
+                "name": "courseSettings",
+                "label": "Course Settings",
+                "elements": [
+                    {
+                        "name": "courseName",
+                        "label": "Course Name",
+                        "type": "Microsoft.Common.TextBox",
+                        "toolTip": "Course Title. Will be prepended to all the VM names",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-z0-9A-Z-]{3,79}$",
+                            "validationMessage": "The VM Name must be between 3 and 30 characters long and contain letters, numbers and hyphens only."
+                        }
+                    },
+                    {
+                        "name": "trainerId",
+                        "label": "Creator Name",
+                        "type": "Microsoft.Common.TextBox",
+                        "toolTip": "Name or ID of creator, to tag ownership of Azure resources. ('jsmith', 'John Smith', 'j.smith')",
+                        "defaultValue": "",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-z0-9A-Z-. ]{3,79}$",
+                            "validationMessage": "The name must be between 3 and 79 characters long and can contain letters, numbers, spaces, hyphens, and periods only."
+                        }
+                    },
+                    {
+                        "name": "vmCountMessage",
+                        "type": "Microsoft.Common.InfoBox",
+                        "visible": true,
+                        "options": {
+                            "icon": "Info",
+                            "text": "It's recommend you create an extra Pod for the instructor. For example, a class of 10 students should have 11 Pods."
+                        }
+                    },
+                    {
+                        "name": "vmCount",
+                        "label": "Number of Pods",
+                        "type": "Microsoft.Common.TextBox",
+                        "toolTip": "The number of VM instances created",
+                        "defaultValue": 1,
+                        "visible": true,
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[1-9]{1,2}$",
+                            "validationMessage": "Only numbers between 1 and 99."
+                        }
+                    },
+                    {
+                        "name": "allowInternetOutboundMessage",
+                        "type": "Microsoft.Common.InfoBox",
+                        "visible": true,
+                        "options": {
+                            "icon": "Warning",
+                            "text": "Internet Outbound should be set to False during live courses for better security."
+                        }
+                    },
+                    {
+                        "name": "allowInternetOutbound",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Allow Outbound Internet Access.",
+                        "toolTip": "Allow VM outbound internet access. During classes, Outbound Internet should be disabled for security!",
+                        "defaultValue": "False",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "False",
+                                    "value": false
+                                },
+                                {
+                                    "label": "True",
+                                    "value": true
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "outputs": {
+            "location": "[location()]",
+            "adminUsername": "[basics('adminUsername')]",
+            "adminPassword": "[basics('adminPassword')]",
+
+            "virtualMachineName": "[steps('courseSettings').courseName]",
+            "vmCount": "[int(steps('courseSettings').vmCount)]",
+            "trainerId": "[steps('courseSettings').trainerId]",
+            "allowInternetOutbound": "[steps('courseSettings').allowInternetOutbound]",
+
+            "virtualMachineSize": "Standard_D16_v3",
+            "hardDiskType": "Standard_LRS"
+        }
+    }
+}
